@@ -1,0 +1,14 @@
+queue_size: 100
+# kernelSize: 5
+# strr: 0.2
+# srt: 0.4
+# str: 0.2
+# stt: 0.4
+# particles: 100
+# map_update_interval: 0.5
+# iterations: 20
+# kernelSize: 5
+# linearUpdate: 0.2
+# angularUpdate: 0.25
+throttle_scans: 5
+# odom_frame: odom_temp

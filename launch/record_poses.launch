@@ -1,0 +1,10 @@
+<launch>
+	<arg name="dir"/>
+
+	<include file="$(find map_analysis)/launch/bag+tf.launch">
+		<arg name="bag_path" value="$(arg dir)/compressed_wheelchair_[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]_[0-9][0-9][0-9].cropped.bag"/>
+		<arg name="amcl" value="true"/>
+	</include>
+	<node pkg="rosbag" type="record" name="record" args="/amcl_pose /map_metadata /tf -O $(arg dir)/poses"/>
+	<node name="call_global_localization" type="call_global_localization.py" pkg="map_analysis"/>
+</launch>

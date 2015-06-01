@@ -1,0 +1,40 @@
+queue_size: 100
+# for real data
+# fixed_frame: odom
+# base_frame: base_footprint
+
+# for gazebo data
+fixed_frame: odom_temp
+base_frame: base_footprint
+
+# other params
+publish_tf: true
+use_imu: false
+use_odom: false
+publish_pose_stamped: true
+
+# Keyframes - 0 means frame-to-frame matching
+# kf_dist_linear: 0
+# kf_dist_angular: 0
+
+# # Scan Matching
+# max_iterations: 500
+# max_correspondence_dist: 0.2
+# restart: 1
+# orientation_neighbourhood: 100
+# do_visibility_test: 1
+# minimumScore: 50
+# epsilon_xy: 0.0000001
+# epsilon_theta: 0.0000001
+
+optimization_params:
+    max_iterations: [200, 300, 3]
+    max_correspondence_dist: [0.6, 1.0, 3]
+    max_angular_correction_deg: [67.5, 100, 3]
+    max_linear_correction: [0.75, 1.25, 3]
+    # outliers_maxPerc: [0.85, 0.95, 3]
+    clustering_threshold: [0.4, 0.7, 3]
+    # orientation_neighbourhood: [5, 15, 5]
+    # use_point_to_line_distance: [0, 1, 2]
+    # do_alpha_test: [0, 1, 2]
+    # do_visibility_test: [0, 1, 2]

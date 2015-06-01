@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+config_path=$(rospack find map_analysis)/laser_opt_configs
+
+files=($config_path/config*.yaml)
+bag=$(rospack find map_analysis)/bag_out.bag
+
+cmds=()
+
+for ((i=0; i<${#files[@]}; i++));
+do
+	port=$(($i+11311))
+	sem -j8 roslaunch -p $port map_analysis optimize_params.launch param_file:=${files[$i]} bag_path:=$bag
+	# sem -j8 roslaunch -p $port map_analysis donothing.launch
+done

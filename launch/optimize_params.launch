@@ -1,0 +1,30 @@
+<launch>
+  <arg name="bag_path" default="$(find map_analysis)/bag_out.bag"/>
+  <arg name="playback_speed" default="1"/>
+  <arg name="param_file" default="$(find map_analysis)/laser_opt_configs/template.yaml"/>
+  <arg name="rviz" default="false"/>
+
+
+  <param name="use_sim_time" value="true"/>
+
+  <include file="$(find wheelchair_description)/launch/wheelchair_description.launch"/>
+  <include file="$(find wheelchair_description)/launch/wheelchair_odom.launch">
+    <arg name="config_file" value="$(arg param_file)"/>
+  </include>
+
+  <!-- <node pkg="map_analysis" type="play" name="play" args="$(arg bag_path) $(arg playback_speed)" required="true" unless="$(arg rviz)"/> -->
+
+  <!-- <node pkg="map_analysis" type="play" name="play" args="$(arg bag_path) $(arg playback_speed) pause" if="$(arg rviz)"/> -->
+
+  <node pkg="rosbag" type="play" name="play" args="$(arg bag_path) --clock --skip-empty=0.5 --pause"/>
+
+  <!-- <node pkg="map_analysis" type="hausdorff_odom.py" name="hausdorff_odom" args="$(arg param_file)" output="screen"/> -->
+  <node pkg="map_analysis" type="pose_to_odom.py" name="pose_to_odom"/>
+  <node pkg="map_analysis" type="alphabeta.py" name="alphabeta">
+    <param name="base_frame" value="base_footprint"/>
+    <param name="fixed_frame" value="odom_temp"/>
+  </node>
+  <node name="rviz" type="rviz" pkg="rviz" args="-d $(find map_analysis)/laser_odom.rviz" if="$(arg rviz)"/>
+
+
+</launch>

@@ -1,0 +1,15 @@
+base_frame: base_footprint
+clustering_threshold: 0.4
+# fixed_frame: odom_temp
+fixed_frame: odom
+max_angular_correction_deg: 67.5
+max_correspondence_dist: 0.6
+max_iterations: 200.0
+max_linear_correction: 1.75
+outliers_maxPerc: 0.8999999999999999
+publish_pose_stamped: true
+publish_tf: true
+queue_size: 100
+use_imu: false
+use_odom: false
+do_visibility_test: 1
