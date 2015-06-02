@@ -1,6 +1,7 @@
 import genpy
 import yaml
 
+
 def extract_clusters(clusters, topics, bag_in, bag_out):
     for cluster in clusters:
         start, end = cluster
@@ -16,6 +17,7 @@ def extract_clusters(clusters, topics, bag_in, bag_out):
         )
         for topic, msg, stamp in bag_iterator:
             bag_out.write(topic, msg, stamp)
+
 
 def get_info(bag):
     return yaml.load(bag._get_yaml_info())
