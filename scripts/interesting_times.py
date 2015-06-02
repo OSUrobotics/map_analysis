@@ -38,6 +38,7 @@ if __name__ == '__main__':
     topics = [
         '/wheelchair_lasers/left',
         '/wheelchair_lasers/right',
+        '/wifi_info'
     ]
     bags = {}
     for bagfile in argv:
@@ -47,24 +48,37 @@ if __name__ == '__main__':
 
         n_messages_left = get_n_messages('/wheelchair_lasers/left', bag_info)
         n_messages_right = get_n_messages('/wheelchair_lasers/right', bag_info)
+        n_messages_wifi = get_n_messages('/wifi_info', bag_info)
 
         # preallocate the numpy arrays
         left = np.zeros((n_messages_left, 512))
         right = np.zeros((n_messages_right, 512))
+        wifi_left = np.zeros(n_messages_left, dtype=bool)
+        wifi_right = np.zeros(n_messages_right, dtype=bool)
+        # wifi_status = np.zeros((n_messages_wifi, 2))
 
         l_stamps = []
         r_stamps = []
         ind_l = 0
         ind_r = 0
+        ind_w = 0
+
+        last_wifi_status = True
+
         for topic, msg, stamp in bag.read_messages(topics=topics):
             if topic.endswith('left'):
                 left[ind_l, :] = msg.ranges
                 l_stamps.append(stamp.to_sec())
+                wifi_left[ind_l] = last_wifi_status
                 ind_l += 1
             elif topic.endswith('right'):
                 right[ind_r, :] = msg.ranges
                 r_stamps.append(stamp.to_sec())
+                wifi_right[ind_r] = last_wifi_status
                 ind_r += 1
+            elif topic.endswith('wifi_info'):
+                last_wifi_status = len(msg.essid) > 0
+
 
         bags[os.path.split(bagfile)[-1]] = dict(
             left=ssd(np.ma.asarray(left)),
@@ -73,15 +87,9 @@ if __name__ == '__main__':
 
         ssd_left = bags[os.path.split(bagfile)[-1]]['left']
         ssd_right = bags[os.path.split(bagfile)[-1]]['right']
-        # l_counts, l_edges = np.histogram(ssd_left, bins=N_BINS)
-        # r_counts, r_edges = np.histogram(ssd_right, bins=N_BINS)
 
-        # print l_edges[LOWER_CUTOFF_BIN], r_edges[LOWER_CUTOFF_BIN]
-
-        # l_indices_to_keep = ssd_left > l_edges[LOWER_CUTOFF_BIN]
-        # r_indices_to_keep = ssd_right > r_edges[LOWER_CUTOFF_BIN]
-        l_indices_to_keep = ssd_left > 35
-        r_indices_to_keep = ssd_right > 35
+        l_indices_to_keep = (ssd_left > 35) & wifi_left[:-1]
+        r_indices_to_keep = (ssd_right > 35) & wifi_right[:-1]
 
         l_stamps = np.array(l_stamps)[l_indices_to_keep.nonzero()[0]]
         r_stamps = np.array(r_stamps)[r_indices_to_keep.nonzero()[0]]
@@ -97,14 +105,6 @@ if __name__ == '__main__':
 
             extract_clusters(clusters, topics, bag, bag_out)
 
-            # for cluster in clusters:
-            #     bag_iterator = bag.read_messages(
-            #         topics=topics,
-            #         start_time=rospy.Time(cluster[0]),
-            #         end_time=rospy.Time(cluster[1])
-            #     )
-            #     for topic, msg, stamp in bag_iterator:
-            #         bag_out.write(topic, msg, stamp)
             bag_out.close()
             print 'wrote ', bag_out._filename
         else:
