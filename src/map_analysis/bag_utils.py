@@ -13,10 +13,11 @@ def extract_clusters(clusters, topics, bag_in, bag_out):
         bag_iterator = bag_in.read_messages(
             topics=topics,
             start_time=start,
-            end_time=end
+            end_time=end,
+            raw=True
         )
         for topic, msg, stamp in bag_iterator:
-            bag_out.write(topic, msg, stamp)
+            bag_out.write(topic, msg, stamp, raw=True)
 
 
 def get_info(bag):
