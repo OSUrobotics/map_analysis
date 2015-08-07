@@ -4,11 +4,33 @@ project(map_analysis)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+	roscpp
+	rosbag
+	rosbag_storage)
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED)
+# find_package(YAML_CPP_LIBRARIES)
 
+find_package(PkgConfig)
+
+if (APPLE)
+  #find yaml cpp for mac os
+  find_library(YAML_CPP_LIBRARIES NAMES yaml-cpp)
+  find_path(YAML_CPP_H_INCLUDE_DIR yaml-cpp/yaml.h )
+  SET(YAML_CPP_INCLUDE_DIR ${YAML_CPP_H_INCLUDE_DIR}/yaml-cpp)
+elseif (ANDROID)
+    find_package(yaml-cpp)
+    add_definitions(-DHAVE_NEW_YAMLCPP)
+else()
+  pkg_check_modules(YAML_CPP yaml-cpp)
+  if(${YAML_CPP_VERSION} VERSION_GREATER 0.5)
+    add_definitions(-DHAVE_NEW_YAMLCPP)
+  endif()
+  link_directories(${YAML_CPP_LIBRARY_DIRS})
+endif()
+include_directories(${YAML_CPP_INCLUDE_DIRS})
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -78,7 +100,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES map_analysis
-#  CATKIN_DEPENDS other_catkin_pkg
+ CATKIN_DEPENDS rosbag rosbag_storage
 #  DEPENDS system_lib
 )
 
@@ -88,7 +110,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(map_analysis
@@ -96,16 +118,18 @@ catkin_package(
 # )
 
 ## Declare a cpp executable
-# add_executable(map_analysis_node src/map_analysis_node.cpp)
+add_executable(extract_chunks src/extract_chunks.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(map_analysis_node map_analysis_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(map_analysis_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(extract_chunks
+  ${Boost_INCLUDE_DIRS}
+  ${catkin_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
+)
 
 #############
 ## Install ##
