@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# This should be run in the directory where logs get dumped.
+# It creates a dir for each day, and links all bags from that
+# day into the dir. It can be run multiple times and will ignore
+# anything that has already been done.
+
+dates=$(ls wheelchair_2015-0*.bag | awk -F '[_-]' '{print $3"-"$4}' | sort | uniq)
+
+mkdir -p $dates
+
+for date in $dates
+do
+	ln wheelchair_2015-$date-*.bag $date 2>&1 | grep -v "File exists$"
+done
