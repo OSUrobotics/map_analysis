@@ -40,6 +40,26 @@ def find_clusters(l, dist=0.5):
         last = t
     return clusters
 
+def merge_clusters(l, dist=3.00):
+    merged = []
+    last_len = len(l)
+    n_clusters = len(l)
+    while len(merged) != last_len:
+        last_interval = l[0]
+        merged = [l[1]]
+        for start, end in l[1:]:
+            # if we are close enough to the last interval, update it
+            if start - dist <= last_interval[1]:
+                last_interval[1] = end
+            # otherwise create a new interval
+            else:
+                last_interval = [start, end]
+                merged.append(last_interval)
+            last_end = end
+        last_len = len(l)
+        l = merged[:]
+    return l
+
 
 if __name__ == '__main__':
     argv = rospy.myargv()[1:]
@@ -169,7 +189,7 @@ if __name__ == '__main__':
             out_path = os.path.join(path, 'compressed_'+filename)
             # extract_clusters(ms_clusters, topics, bagfile, out_path)
             # extract_clusters(clusters, topics, bagfile, out_path)
-            extract_clusters(non_tiny_clusters, topics, bagfile, out_path)
+            extract_clusters(merge_clusters(non_tiny_clusters), topics, bagfile, out_path)
 
             # bag_out.close()
             # print 'wrote ', bag_out._filename
