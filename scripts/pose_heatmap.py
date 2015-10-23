@@ -1,22 +1,45 @@
-#!/usr/bin/env rosh
+#!/usr/bin/env python
 from privacy_zones.map_geometry import MapGeometry
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.misc import imread
 from map_analysis.math import linePoints, mnd
 import time
+import rosbag
+import sys
+import os
+
+plt.style.use('ggplot')
+
+import matplotlib
+base_fontsize = 20
+matplotlib.rcParams.update({
+    "axes.labelsize": base_fontsize,
+    "axes.titlesize": base_fontsize,
+    "font.size": base_fontsize,
+    "legend.fontsize": base_fontsize - 4,
+    "axes.labelsize": base_fontsize - 2,
+    "figure.figsize": [10.5, 7],
+    "savefig.format": "pdf",
+    "xtick.labelsize": base_fontsize - 6,
+    "ytick.labelsize": base_fontsize - 6,
+
+})
 
 # b = Bag('/media/lazewatd/data/wheelchair_logs/04-30/poses.bag')
-b = Bag('/media/lazewatd/data/wheelchair_logs/05-31/poses.bag')
+# b = Bag('/media/lazewatd/data/wheelchair_logs/05-27/poses.bag')
+b = rosbag.Bag(sys.argv[1])
 
-for _, map_metadata, _ in b.topics.map_metadata:
+# for _, map_metadata, _ in b.topics.map_metadata:
+for _, map_metadata, _ in b.read_messages(topics=['/map_metadata']):
     break 
 
 mg = MapGeometry(map_metadata=map_metadata)
 res = mg.map_info['resolution']
 poses = []
 cov = []
-for _, p, _ in b.topics.amcl_pose:
+# for _, p, _ in b.topics.amcl_pose:
+for _, p, _ in b.read_messages(topics=['/amcl_pose']):
     poses.append((p.pose.pose.position.x, p.pose.pose.position.y))
     cov.append(np.multiply(p.pose.covariance, res))
 
@@ -79,4 +102,8 @@ heatmap_plot = plt.imshow(np.ma.log(heatmap_masked))
 heatmap_plot.set_cmap('jet')
 cb = plt.colorbar()
 cb.set_label('Log frequency (arbitrary units)')
+
+plt.tight_layout()
+
+plt.savefig(os.path.expanduser('~/Dropbox/research/thesis/figures/pose_heatmap.pdf'))
 plt.show()
